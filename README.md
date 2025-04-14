@@ -129,9 +129,7 @@ These models are downloaded and stored locally, ensuring low latency and data pr
 ---
 
 
-Here are definitions of key AI terms for a library audience:
-
-# Key AI Concepts for Libraries
+## Key AI Concepts for Libraries
 
 **Ollama**: A user-friendly tool that lets you run advanced AI language models on your own computer rather than in the cloud. 
 Think of it like having your own personal AI assistant that works completely offline, 
