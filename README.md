@@ -1,4 +1,4 @@
-# LocalAIAgentWithRAG
+# Local AI Agent with RAG
 
 LocalAIAgentWithRAG is a local implementation of an Artificial Intelligence (AI) Agent utilizing 
 Retrieval-Augmented Generation (RAG) to enhance context-aware responses by leveraging 
@@ -155,10 +155,6 @@ Think of RAG as giving an AI assistant the ability to first consult your library
 
 
 ---
-
-
-
-
 
 ## Future Plans
 
