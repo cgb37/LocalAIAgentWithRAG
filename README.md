@@ -62,14 +62,14 @@ If you see green success messages, the installation is complete.
 
 Follow these instructions to set up the project:
 
-```markdown
-2. Clone and install the project:
+
+1. Clone and install the project:
 ```shell script
 git clone git@github.com:cgb37/LocalAIAgentWithRAG.git
 cd LocalAIAgentWithRAG
 ```
 
-3. Download and install Ollama:
+2. Download and install Ollama:
     - Visit https://ollama.com/download
     - Download the Mac version
     - Double-click the downloaded file to install
@@ -78,12 +78,12 @@ cd LocalAIAgentWithRAG
 ollama --version
 ```
 
-4. Set the installation script to executable:
+3. Set the installation script to executable:
 ```shell script
 chmod +x install.sh
 ```
 
-5. Run the installation script:
+4. Run the installation script:
 ```shell script
 ./install.sh
 ```
@@ -93,17 +93,12 @@ chmod +x install.sh
 
 Once the setup is complete, you can begin using the local RAG-powered AI agent:
 
-1. Activate the Python virtual environment:
-```shell script
-source venv/bin/activate
-```
-
-2. Launch the application (example command):
+1. Launch the application (example command):
 ```shell script
 python3 main.py
 ```
 
-3. Start interacting with the agent by providing queries. For example, ask questions like:
+2. Start interacting with the agent by providing queries. For example, ask questions like:
 
 
 The system will use the retrieval-augmented generation technique to fetch context, process it using the `llama3.2` model, and provide a highly contextualized response.
