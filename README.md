@@ -81,7 +81,6 @@ ollama --version
 4. Set the installation script to executable:
 ```shell script
 chmod +x install.sh
-./install.sh
 ```
 
 5. Run the installation script:
@@ -101,7 +100,7 @@ source venv/bin/activate
 
 2. Launch the application (example command):
 ```shell script
-python main.py
+python3 main.py
 ```
 
 3. Start interacting with the agent by providing queries. For example, ask questions like:
