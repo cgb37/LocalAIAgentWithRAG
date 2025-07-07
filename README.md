@@ -1,12 +1,60 @@
-# Local AI Agent with RAG
+# Local AI Agent with RAG - Multi-Project Edition
 
 LocalAIAgentWithRAG is a local implementation of an Artificial Intelligence (AI) Agent utilizing 
 Retrieval-Augmented Generation (RAG) to enhance context-aware responses by leveraging 
-external knowledge sources.
+external knowledge sources. **Now supports multiple projects with specialized data processing and prompts!**
 
 This project is designed to keep everything running locally, ensuring better data privacy and 
 low-latency inference. It is perfect for applications requiring local knowledge search and 
 processing in combination with generative AI.
+
+## 🆕 Multi-Project Architecture
+
+The system now supports multiple projects, each with its own:
+- **Data source** (CSV files)
+- **Processing logic** (custom Document processing)
+- **Prompt templates** (specialized for the domain)
+- **Vector stores** (isolated and optimized)
+
+### Available Projects
+
+1. **UX Maturity** - Analyzes UX research practices in academic libraries
+2. **LCSH Variant Labels** - Library of Congress Subject Headings for cataloging
+3. **Restaurant Reviews** - Customer sentiment analysis and insights
+
+## Quick Start
+
+### Installation
+```bash
+git clone git@github.com:cgb37/LocalAIAgentWithRAG.git
+cd LocalAIAgentWithRAG
+chmod +x install.sh
+./install.sh
+```
+
+### Usage
+```bash
+# Activate virtual environment
+source venv/bin/activate
+
+# Run multi-project system
+python3 new_main.py
+
+# Or use legacy single-project mode
+python3 main.py
+```
+
+### Example Session
+```
+Multi-Project RAG System
+Enter command or select a project first: list
+Available projects: ux_maturity, lcsh_variant_labels, restaurant_reviews
+
+Enter command or select a project first: select ux_maturity
+Selected project: ux_maturity
+
+[ux_maturity] Ask your question: What factors influence UX maturity in libraries?
+```
 
 
 ## Project Description: Library RAG System with Open Source LLMs
