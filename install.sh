@@ -45,6 +45,10 @@ echo -e "\n${GREEN}Creating Python virtual environment...${NC}"
 python3 -m venv venv
 source venv/bin/activate
 
+# Upgrade pip in the virtual environment
+echo -e "\n${GREEN}Upgrading pip...${NC}"
+python3 -m pip install --upgrade pip
+
 # Install Python dependencies
 echo -e "\n${GREEN}Installing Python packages...${NC}"
 pip3 install -r requirements.txt
@@ -54,7 +58,37 @@ echo -e "\n${GREEN}Downloading AI models...${NC}"
 ollama pull llama3.2
 ollama pull mxbai-embed-large
 
+# Set up new project structure
+echo -e "\n${GREEN}Setting up multi-project structure...${NC}"
+python3 migrate_existing.py
+python3 create_project_files.py
+
+# Prompt user to rebuild vector store with new system
+echo -e "\n${YELLOW}Do you want to initialize the new multi-project system? (y/n)${NC}"
+read -r init_projects
+
+if [[ "$init_projects" == "y" || "$init_projects" == "Y" ]]; then
+    echo -e "${GREEN}Initializing projects...${NC}"
+    python3 -c "from project_manager import ProjectManager; pm = ProjectManager(); pm.initialize_all_projects(force_refresh=True)"
+else
+    echo -e "${YELLOW}Skipping project initialization.${NC}"
+fi
+
+# Prompt user to initialize a single project
+echo -e "\n${YELLOW}Do you want to initialize a single project? (y/n)${NC}"
+read -r init_single
+
+if [[ "$init_single" == "y" || "$init_single" == "Y" ]]; then
+    echo -e "${YELLOW}Enter the project name to initialize:${NC}"
+    read -r project_name
+    echo -e "${GREEN}Initializing project: $project_name...${NC}"
+    python3 -c "from project_manager import ProjectManager; pm = ProjectManager(); pm.initialize_project('$project_name', force_refresh=True)"
+else
+    echo -e "${YELLOW}Skipping single project initialization.${NC}"
+fi
+
 echo -e "\n${GREEN}Installation complete!${NC}"
 echo -e "To start using the project:"
 echo -e "1. Activate the virtual environment: ${GREEN}source venv/bin/activate${NC}"
-echo -e "2. Run the application: ${GREEN}python3 main.py${NC}"
+echo -e "2. Run the new multi-project application: ${GREEN}python3 new_main.py${NC}"
+echo -e "3. Or continue using the original version: ${GREEN}python3 main.py${NC}"
