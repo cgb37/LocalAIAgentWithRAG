@@ -1,34 +1,51 @@
 from langchain_ollama.llms import OllamaLLM
 from langchain_core.prompts import ChatPromptTemplate
-from vector import retriever
+from vector import lcsh_variant_retriever
+import re
 
 model = OllamaLLM(model="llama3.2")
 
 template = """
-You are an expert in analyzing UX maturity and research methods in academic libraries.
-Focus on providing insights about UX practices, maturity stages, and research methods used in university libraries.
+You are an expert in library cataloging and subject analysis.
+Given a description, select the most relevant Library of Congress Subject Headings (LCSH) variant labels from the list below.
 
-Here is relevant data from the UX maturity assessment: {responses}
+Candidate LCSH variant labels:
+{responses}
 
-Based on this data, please answer the following question: {question}
+Description: {question}
 
-Keep your analysis focused on:
-- UX maturity stages and progression
-- Research methods and their effectiveness
-- Institutional characteristics and their impact
-- Challenges and success factors in UX implementation
+Return a list of the most relevant subject headings from the candidates above, and explain your reasoning.
+You must only return subject headings from the list above. Do not invent or modify any headings. If none are relevant, return an empty list.
 """
 
 prompt = ChatPromptTemplate.from_template(template)
 chain = prompt | model
 
+def extract_llm_labels(llm_output, candidate_labels):
+    # Extract only those candidate labels that appear in the LLM output (case-insensitive)
+    selected = []
+    for label in candidate_labels:
+        # Use word boundary for exact match, fallback to substring if needed
+        if re.search(rf"\\b{re.escape(label)}\\b", llm_output, re.IGNORECASE) or label in llm_output:
+            selected.append(label)
+    return selected
+
 while True:
     print("\n\n-------------------------------")
-    question = input("Ask your question about library UX (q to quit): ")
+    question = input("Enter a description to find relevant LCSH subject headings (q to quit): ")
     print("\n\n")
     if question == "q":
         break
 
-    context = retriever.invoke(question)
-    result = chain.invoke({"responses": context, "question": question})
+    docs = lcsh_variant_retriever.invoke(question)
+    candidate_labels = [doc.page_content for doc in docs]
+    formatted_labels = "\n".join(f"- {label}" for label in candidate_labels)
+
+    result = chain.invoke({"responses": formatted_labels, "question": question})
+    selected_labels = extract_llm_labels(result, candidate_labels)
+
+    print("LLM-selected subject headings from the database:")
+    for i, label in enumerate(selected_labels, 1):
+        print(f"{i}. {label}")
+    print("\nExplanation from LLM:\n")
     print(result)
