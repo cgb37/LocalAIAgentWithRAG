@@ -17,32 +17,58 @@ RED='\033[0;31m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
+# Whitelist of required commands and models
+REQUIRED_COMMANDS=("python3" "pip3" "ollama")
+REQUIRED_OLLAMA_MODELS=("llama3.2" "mxbai-embed-large")
+REQUIRED_PYTHON="/opt/homebrew/bin/python3"
+REQUIRED_PYTHON_VERSION="3.12"
+
 # Function to check if a command exists
 check_command() {
     if ! command -v $1 &> /dev/null; then
-        if [ "$1" = "ollama" ]; then
-            echo -e "${RED}Error: ollama is not installed${NC}"
-            echo -e "${YELLOW}Please install ollama first:${NC}"
-            echo -e "1. Visit ${GREEN}https://ollama.com${NC}"
-            echo -e "2. Download and install the Mac version"
-            echo -e "3. Run this script again after installation"
-            exit 1
-        else
-            echo -e "${RED}Error: $1 is not installed${NC}"
-            echo "Please install $1 and try again"
-            exit 1
-        fi
+        echo -e "${RED}Error: $1 is not installed${NC}"
+        exit 1
     fi
 }
-# Check prerequisites
+
+# Function to check if an Ollama model exists locally
+check_ollama_model() {
+    if ! ollama list | grep -q "$1"; then
+        echo -e "${YELLOW}Ollama model '$1' not found. Pulling now...${NC}"
+        ollama pull "$1"
+    else
+        echo -e "${GREEN}Ollama model '$1' is already available.${NC}"
+    fi
+}
+
+# Check all required commands
 echo "Checking prerequisites..."
-check_command "python3"
-check_command "pip3"
-check_command "ollama"
+for cmd in "${REQUIRED_COMMANDS[@]}"; do
+    check_command "$cmd"
+done
+
+# Check Python version and path (only before venv is created)
+if [ ! -d "venv" ]; then
+    PYTHON_VERSION=$($REQUIRED_PYTHON --version 2>&1 | awk '{print $2}')
+    PYTHON_PATH=$(which python3)
+    if [[ "$PYTHON_PATH" != "$REQUIRED_PYTHON" ]]; then
+        echo -e "${RED}Error: python3 is not Homebrew Python at $REQUIRED_PYTHON${NC}"
+        echo -e "${YELLOW}Current python3 path: $PYTHON_PATH${NC}"
+        echo -e "${YELLOW}Please run: brew install python${NC}"
+        exit 1
+    fi
+    if [[ "$PYTHON_VERSION" != $REQUIRED_PYTHON_VERSION* ]]; then
+        echo -e "${RED}Error: Python $REQUIRED_PYTHON_VERSION.x is required. Found $PYTHON_VERSION${NC}"
+        exit 1
+    fi
+    echo -e "${GREEN}Using Homebrew Python: $PYTHON_PATH ($PYTHON_VERSION)${NC}"
+else
+    echo -e "${GREEN}Virtual environment already exists. Skipping Homebrew Python path check.${NC}"
+fi
 
 # Create and activate virtual environment
 echo -e "\n${GREEN}Creating Python virtual environment...${NC}"
-python3 -m venv venv
+$REQUIRED_PYTHON -m venv venv
 source venv/bin/activate
 
 # Upgrade pip in the virtual environment
@@ -53,42 +79,30 @@ python3 -m pip install --upgrade pip
 echo -e "\n${GREEN}Installing Python packages...${NC}"
 pip3 install -r requirements.txt
 
-# Download required AI models
-echo -e "\n${GREEN}Downloading AI models...${NC}"
-ollama pull llama3.2
-ollama pull mxbai-embed-large
+# Check and download required Ollama models
+echo -e "\n${GREEN}Checking and downloading required AI models...${NC}"
+for model in "${REQUIRED_OLLAMA_MODELS[@]}"; do
+    check_ollama_model "$model"
+done
 
-# Set up new project structure
-echo -e "\n${GREEN}Setting up multi-project structure...${NC}"
-python3 migrate_existing.py
-python3 create_project_files.py
+# Output summary of software and versions BEFORE running the app
+echo -e "\n${GREEN}Environment summary:${NC}"
+PYTHON_VERSION_ACTUAL=$(python3 --version 2>&1)
+PIP_VERSION_ACTUAL=$(pip3 --version 2>&1)
+OLLAMA_VERSION_ACTUAL=$(ollama --version 2>&1)
+# List Ollama models
+OLLAMA_MODELS=$(ollama list | grep -E "llama3.2|mxbai-embed-large" | awk '{print $1 " (" $2 ")"}')
+echo -e "  Python:   $PYTHON_VERSION_ACTUAL"
+echo -e "  Pip:      $PIP_VERSION_ACTUAL"
+echo -e "  Ollama:   $OLLAMA_VERSION_ACTUAL"
+echo -e "  Models:   $OLLAMA_MODELS"
 
-# Prompt user to rebuild vector store with new system
-echo -e "\n${YELLOW}Do you want to initialize the new multi-project system? (y/n)${NC}"
-read -r init_projects
+echo -e "\n${GREEN}Activating the virtual environment...${NC}"
+source venv/bin/activate
+echo -e "${GREEN}Running the multi-project application...${NC}"
+python3 main.py
 
-if [[ "$init_projects" == "y" || "$init_projects" == "Y" ]]; then
-    echo -e "${GREEN}Initializing projects...${NC}"
-    python3 -c "from project_manager import ProjectManager; pm = ProjectManager(); pm.initialize_all_projects(force_refresh=True)"
-else
-    echo -e "${YELLOW}Skipping project initialization.${NC}"
+# Only show installation complete if not running the app interactively
+if [ "$1" != "run" ]; then
+  echo -e "\n${GREEN}Installation complete!${NC}"
 fi
-
-# Prompt user to initialize a single project
-echo -e "\n${YELLOW}Do you want to initialize a single project? (y/n)${NC}"
-read -r init_single
-
-if [[ "$init_single" == "y" || "$init_single" == "Y" ]]; then
-    echo -e "${YELLOW}Enter the project name to initialize:${NC}"
-    read -r project_name
-    echo -e "${GREEN}Initializing project: $project_name...${NC}"
-    python3 -c "from project_manager import ProjectManager; pm = ProjectManager(); pm.initialize_project('$project_name', force_refresh=True)"
-else
-    echo -e "${YELLOW}Skipping single project initialization.${NC}"
-fi
-
-echo -e "\n${GREEN}Installation complete!${NC}"
-echo -e "To start using the project:"
-echo -e "1. Activate the virtual environment: ${GREEN}source venv/bin/activate${NC}"
-echo -e "2. Run the new multi-project application: ${GREEN}python3 new_main.py${NC}"
-echo -e "3. Or continue using the original version: ${GREEN}python3 main.py${NC}"
