@@ -583,5 +583,7 @@ Temporary Items
 .github/copilot-instructions.md
 
 projects/**/data.csv
+projects/loc_subject_headings/data.csv
+
 
 original_spreadsheets/*
