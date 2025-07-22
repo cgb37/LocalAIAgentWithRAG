@@ -581,3 +581,7 @@ Temporary Items
 
 #Ignore vscode AI rules
 .github/copilot-instructions.md
+
+projects/**/data.csv
+
+original_spreadsheets/*
